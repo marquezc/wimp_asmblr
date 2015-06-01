@@ -1,17 +1,7 @@
-START...
-  
-
-
-
-LINE 1
-
-LINE 2
-
-LINE 3
-LINE 4
-LINE 5
-
-LINE 6
-LINE 7
-
-...END
+START
+MOV A, 00
+ADDC A, 02
+MOV R4, A
+MOV A, 8
+ADDC A, R4
+END

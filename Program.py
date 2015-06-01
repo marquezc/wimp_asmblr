@@ -4,33 +4,35 @@ import sys
 
 class Program:
 
-    def __init__ (self, source_filename, out_filename="wimp.bin"):
+    def __init__ (self, src_filename, out_filename="wimp.bin"):
 
-        self.source_filename = source_filename # Input File
-        self.out_filename = out_filename       # Output File
+        self.src_filename = src_filename 
+        self.out_filename = out_filename 
 
         # Open Input and Output file handlers
         try:
-            self.source_f = open(self.source_filename, 'r') # Input file handler
-            self.out_f    = open(self.out_filename, 'w')    # Output file handler
+            self.src_f = open(self.src_filename, 'r') 
+            self.out_f    = open(self.out_filename, 'w')
         except IOError as e:
             print ("Error ({0}): '{1}': {2}".format(e.errno, \
-                                                    self.source_filename, \
+                                                    self.src_filename, \
                                                     e.strerror))
 
-        self.source_code = self.get_source_code()
+        self.src_code = self.get_src_code()
         self.instr = []
         self.comments = []
+        self.get_instr()
 
+        
         # Program Information
         self.prog_size = self.get_prog_size 
-        self.num_comments = len(self.comments)
-        self.num_instructions = len(self.instr)
-        self.num_source_lines = len(self.source_code) # Number of Non-blank lines
+        #self.num_comments = len(self.comments)
+        #self.num_instructions = len(self.instr)
+        #self.num_src_lines = len(self.src_code) # Number of Non-blank lines
 
         # Close Input and Output file handlers
         try:
-            self.source_f.close()
+            self.src_f.close()
             self.out_f.close()
 
         except IOError as e:
@@ -38,26 +40,30 @@ class Program:
                                                     self.out_f, \
                                                     e.strerror))
 
-    def get_source_code (self):
-        # One-liner to do the same thing
-        # return list(filter(lambda x: x, [line.rstrip() for line in self.source_f]))
+    # Return list of non-empty lines in source code
+    def get_src_code (self):
         
-        lines = [line.rstrip() for line in self.source_f]
-        return [line for line in lines if line]
+        lines = [line.rstrip() for line in self.src_f] 
+        return [line for line in lines if line] 
 
+    # Return list of (split) lines with valid commands
     def get_instr (self):
+        for line in self.src_code:
+            i = Instruction(line)
+            if i.valid_cmd():
+                i.src_line = [x.rstrip(',') for x in i.src_line]
+                self.instr.append(i)
+
+    def get_comments (self):
         pass
 
-    def get_comments(self):
-        pass
-    
     # Get program size in bytes
     def get_prog_size (self):
         pass
 
     # String Representation of Program
     def __str__ (self):
-        return "Assemble \'" + self.source_filename + "\'; Output: \'" + \
+        return "Assemble \'" + self.src_filename + "\'; Output: \'" + \
                self.out_filename + "\'"
 
     # Comparison based on program size (bytes)
@@ -84,12 +90,19 @@ class Instruction:
     INSTR_SET = ['MOV', 'ADDC', 'ORL', 'ANL', 'XRL', \
                  'SWAP', 'CLR', 'SETB', 'SJMP', 'JZ', 'LCD']
 
-    def __init__ (self,):
-        pass
+    REGISTERS = ['R0', 'R1', 'R2', 'R3', 'R4', \
+                 'R5', 'R6', 'R7', 'R8', 'R9']
+    
+    def __init__ (self, src_line):
+        self.src_line = src_line.split()
 
-
+    def valid_cmd (self):
+        return True if self.src_line[0] in Instruction.INSTR_SET else False
+        
 def main():
 
     p = Program('in.wimp')
-    print (p.source_code)
-    print (p.num_source_lines)
+    
+    for i in p.instr:
+        print (i.src_line)
+
