@@ -7,7 +7,7 @@ and/or hex output files for easy input into the Altera Cyclone II.
 
 #!/usr/bin/python -i
 
-use Instr
+import Instr
 
 class Program:
 
@@ -113,5 +113,3 @@ def main ():
         prog.get_src ()
     
     print (prog.src)
-
-    print Instr.INSTR_SET
