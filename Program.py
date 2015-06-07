@@ -7,16 +7,12 @@ and/or hex output files for easy input into the Altera Cyclone II.
 
 #!/usr/bin/python3 -i
 
-import os.path
 from Instruction import Instr
 
 class Program (object):
 
     # Don't create the Program object if input file doesn't exist
     def __new__(cls, *args, **kwargs):
-
-        input_file = args[0]
-        output_file = args[1]
 
         fail = 0
 
@@ -38,9 +34,6 @@ class Program (object):
 
         if not fail:
             return object.__new__(cls, (input_fh, output_fh), **kwargs)
-        else:
-            print ("Error: {0} {1}").format(input_file, output_file)
-
 
     # Program Class Constructor
     def __init__ (self, input_fh, output_fh):
@@ -60,6 +53,10 @@ class Program (object):
 
         self.init_src()
         self.init_instructions()
+
+    # Instance Representative String
+    def __str__ (self):
+        return "Assemble: Program"
         
     # Preliminary Line Formatting
     def init_src (self):
@@ -78,9 +75,6 @@ class Program (object):
     def get_instructions (self):
         return self.instructions
 
-    # Instance Representative String
-    def __str__ (self):
-        return "Assemble: Program"
 
     # Rich Comparison based on program size (in bytes) [... .etc]
     def __lt__ (self, prog2):
@@ -105,8 +99,8 @@ class Program (object):
             return False
 
 def main ():
+
     prog = Program ("inpu", "output")
-    if not prog:
-        print ("Error: Instance doesn't exist")
-    else:
+
+    if prog:
         print (prog)

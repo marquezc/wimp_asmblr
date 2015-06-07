@@ -25,7 +25,7 @@ class Instr:
     def format_instr (self, cmd):
         return map (lambda x: x.strip(","), cmd.split(" "))
 
-
+    
     '''
     Validate Instruction
     (This should all be done with regexes eventually...)
@@ -40,8 +40,8 @@ class Instr:
             return False
 
         return True
-    
 
+    
     '''
     basic_syntax_check ()
 
@@ -166,26 +166,3 @@ class Instr:
     def get_args (self):
         return self.args
 
-def main ():
-
-    prog = [Instr('START A'),
-            Instr('START'),
-            Instr('MOV A, 00'),
-            Instr('MOV A, 0G'),
-            Instr('MOV A, R7'),
-            Instr('MOV A, R9'),
-            Instr('MOV R7, A'),
-            Instr('MOV R8, A'),
-            Instr('MOV R2, R3'),
-            Instr('MOV R8, A'),
-            Instr('ANL A, RR'),
-            Instr('ORL R1, A'),
-            Instr('XRL A, R2'),
-            Instr('XRL RR, R2'),
-            Instr('XRL A, Axxxx'),
-            Instr('END')]
-
-    prog = filter(lambda i: i.valid_instr(), prog)
-    
-    for i in prog:
-        print (i)
