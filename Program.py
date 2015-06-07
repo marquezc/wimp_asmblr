@@ -7,7 +7,7 @@ and/or hex output files for easy input into the Altera Cyclone II.
 
 #!/usr/bin/python -i
 
-import Instr
+from Instruction import Instr
 
 class Program:
 
@@ -15,9 +15,7 @@ class Program:
     def __init__ (self, input_file, output_file):
 
         self.src = []
-        self.comments = []
         self.instructions = []
-        self.num_comments = len (self.comments)
         self.num_instructions = len (self.instructions)
         self.byte_size = None
         
@@ -29,6 +27,7 @@ class Program:
         
         self.source_lines = None
 
+    # Open Input and Output files
     def init_files (self):
         fail = 0
         
@@ -50,47 +49,38 @@ class Program:
 
         return 1 if not fail else 0
 
+    # Preliminary Line Formatting
+    def init_src (self):
+        self.src = map(lambda x: x.rstrip(), self.input_fh)
+        self.src = filter(lambda x: x != '', self.src)
+
+    def init_instructions (self):
+        self.instructions = [Instr(line) for line in self.src]
+        self.instructions = filter (lambda i: i.valid_instr(), self.instructions)
+        
     # Get program source
     def get_src (self):
+        return self.src
 
-        # Preliminary Line Formatting
-        tmp = map (lambda x: x.rstrip(), self.input_fh)
-        tmp = filter (lambda x: x != '', tmp) 
-
-         # Split lines
-        tmp = map (lambda x: x.split(' '), tmp)
-
-        # More Formatting
-        for line in tmp:
-            line = map (lambda x: x.rstrip(','), line)
-            self.src.append(line)
+    # Populate Program.instructions
+    def get_instructions (self):
+        return self.instructions
 
     # Instance Representative String
     def __str__ (self):
-        pass
+        return "Assemble: " + self.input_file + " " + self.output_file
 
-    # Rich Comparison based on program size (in bytes)
+
+    # Rich Comparison based on program size (in bytes) [... .etc]
     def __lt__ (self, prog2):
         try:
             return self.byte_size < prog2.byte_size
         except (AttributeError, TypeError):
             return False
 
-    def __le__ (self, prog2):
-        try:
-            return self.byte_size <= prog2.byte_size
-        except (AttributeError, TypeError):
-            return False
-
     def __eq__ (self, prog2):
         try:
             return self.byte_size == prog2.byte_size
-        except (AttributeError, TypeError):
-            return False
-        
-    def __ne__ (self, prog2):
-        try:
-            return self.byte_size <= prog2.byte_size
         except (AttributeError, TypeError):
             return False
 
@@ -100,16 +90,17 @@ class Program:
         except (AttributeError, TypeError):
             return False
 
-    def __ge__ (self, prog2):
-        try:
-            return self.byte_size >= prog2.byte_size
-        except (AttributeErrror, TypeError):
-            return False
-
 def main ():
     prog = Program ("input", "output")
 
-    if prog.init_files ():
-        prog.get_src ()
-    
-    print (prog.src)
+    if not prog.init_files ():
+        return 0
+
+    prog.init_src()
+    prog.init_instructions()
+
+    for i in prog.instructions:
+        print (i)
+
+    print (prog)
+
