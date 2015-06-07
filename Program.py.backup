@@ -15,9 +15,6 @@ class Program (object):
     # Don't create the Program object if input file doesn't exist
     def __new__(cls, *args, **kwargs):
 
-        input_file = args[0]
-        output_file = args[1]
-
         fail = 0
 
         try:
@@ -35,32 +32,57 @@ class Program (object):
             print ("Error ({0}). Couln't Open {1}...{2}").format(e.errno,
                                                                  args[1],
                                                                  e.strerror)
-
-        if not fail:
-            return object.__new__(cls, (input_fh, output_fh), **kwargs)
-        else:
-            print ("Error: {0} {1}").format(input_file, output_file)
-
+        return object.__new__(cls, *args, **kwargs)                                                     
 
     # Program Class Constructor
-    def __init__ (self, input_fh, output_fh):
+    def __init__ (self, input_file, output_file):
 
         self.src = []
         self.instructions = []
         self.err = []
         
+        # IO Filenames
+        self.input_file = input_file
+        self.output_file = output_file
+        
         # IO Filehandlers
-        self.input_fh = input_fh
-        self.output_fh = output_fh
+        self.input_fh = None
+        self.output_fh = None
 
         # Program Stats
         self.num_src_lines = None
         self.num_instructions = None
         self.byte_size = None
 
+        # Automate Program Initialization Process
+        if not self.init_files ():
+            return None
+
         self.init_src()
         self.init_instructions()
         
+    # Open Input and Output files
+'''    def init_files (self):
+        fail = 0
+        
+        try:
+            self.input_fh = open (self.input_file, 'r')
+        except IOError as e:
+            print ("Error ({0}). Couln't Open {1}...{2}").format(e.errno,
+                                                                 self.input_file,
+                                                                 e.strerror)
+            fail = 1
+
+        try:
+            self.output_fh = open (self.output_file, 'w')
+        except IOError as e:
+            print ("Error ({0}). Couln't Open {1}...{2}").format(e.errno,
+                                                                 self.output_file,
+                                                                 e.strerror)
+            fail = 1
+
+        return 1 if not fail else 0
+'''
     # Preliminary Line Formatting
     def init_src (self):
         self.src = map(lambda x: x.rstrip(), self.input_fh)
@@ -80,32 +102,29 @@ class Program (object):
 
     # Instance Representative String
     def __str__ (self):
-        return "Assemble: Program"
+        return "Assemble: " + self.input_file + " " + self.output_file
 
     # Rich Comparison based on program size (in bytes) [... .etc]
     def __lt__ (self, prog2):
-
         try:
             return self.byte_size < prog2.byte_size
         except (AttributeError, TypeError):
             return False
 
     def __eq__ (self, prog2):
-
         try:
             return self.byte_size == prog2.byte_size
         except (AttributeError, TypeError):
             return False
 
     def __gt__ (self, prog2):
-
         try:
             return self.byte_size > prog2.byte_size
         except (AttributeError, TypeError):
             return False
 
 def main ():
-    prog = Program ("inpu", "output")
+    prog = Program ("input", "output")
     if not prog:
         print ("Error: Instance doesn't exist")
     else:
