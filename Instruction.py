@@ -17,6 +17,11 @@ class Instr:
 
     def __init__ (self, cmd):
         self.cmd = self.format_instr(cmd)
+        self.func = self.cmd[0]
+        self.args = self.cmd[1:]
+        self.valid = self.valid_instr()
+        self.byte_size = self.get_byte_size()
+
 
     def __str__ (self):
         return "Instr Object: " + " ".join(self.cmd)
@@ -25,7 +30,28 @@ class Instr:
     def format_instr (self, cmd):
         return map (lambda x: x.strip(","), cmd.split(" "))
 
-    
+    # Get Instruction byte_size
+    def get_byte_size (self):
+
+        if not self.valid:
+            return 0
+        
+        if self.func in ('ANL', 'CLR', 'END', 'ORL', 'SETB', 'START', 'SWAP', 'XRL'):
+            return 1
+
+        if self.func in ('JZ', 'SJMP'):
+            return 2
+
+        if self.func == 'ADDC':
+            return 1 if list(self.args[1])[0] == 'R' else 2
+
+        if self.func == 'MOV':
+            if self.args[1] == 'A' or list(self.args[1])[0] == 'R':
+                return 1
+            else:
+                return 2
+
+
     '''
     Validate Instruction
     (This should all be done with regexes eventually...)
@@ -153,6 +179,10 @@ class Instr:
                 if arg1_chars[0] == 'R' and args[1] != 'A':
                     return False
 
+                # Data moved to Acc must be two chars
+                if args[0] == 'A' and len(arg2_chars) != 2:
+                    return False
+                
             # Validate logic instructions (ANL, ORL, XRL)
             if func in ('ANL', 'ORL', 'XRL'):
 

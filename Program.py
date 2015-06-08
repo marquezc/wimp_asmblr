@@ -17,47 +17,73 @@ class Program (object):
         fail = 0
 
         try:
-            input_fh = open (args[0], 'r')
+            # Open Filehandlers for Error-checking
+            # (i.e. don't create object unless correct file permissions)
+            i_fh = open (args[0], 'r')
+            o_fh = open (args[1], 'w')
         except IOError as e:
             fail = 1
             print ("Error ({0}). Couln't Open {1}...{2}").format(e.errno,
                                                                  args[0],
                                                                  e.strerror)
 
-        try:
-            output_fh = open (args[1], 'w')
-        except IOError as e:
-            fail = 1
-            print ("Error ({0}). Couln't Open {1}...{2}").format(e.errno,
-                                                                 args[1],
-                                                                 e.strerror)
-
         if not fail:
-            return object.__new__(cls, (input_fh, output_fh), **kwargs)
+            # Close Error-check Filehandlers
+            i_fh.close()
+            o_fh.close()
+
+            # Create Instance
+            return object.__new__(cls, *args, **kwargs)
 
     # Program Class Constructor
-    def __init__ (self, input_fh, output_fh):
+    def __init__ (self, input_file, output_file):
 
+        # IO Filenames
+        self.input_file = input_file
+        self.output_file = output_file
+        
+        # IO Filehandlers
+        self.input_fh = None
+        self.output_fh = None
+
+        # Program Handlers
         self.src = []
         self.instructions = []
         self.err = []
-        
-        # IO Filehandlers
-        self.input_fh = input_fh
-        self.output_fh = output_fh
+
+        # Initialize Program Handlers
+        self.init_files()
+        self.init_src()
+        self.init_instructions()
 
         # Program Stats
         self.num_src_lines = None
         self.num_instructions = None
-        self.byte_size = None
-
-        self.init_src()
-        self.init_instructions()
+        self.byte_size = self.get_byte_size()
 
     # Instance Representative String
     def __str__ (self):
         return "Assemble: Program"
-        
+
+    # Initialize Files
+    def init_files (self):
+
+        try:
+            self.input_fh = open (self.input_file, 'r')
+        except IOError as e:
+            fail = 1
+            print ("Error ({0}). Couln't Open {1}...{2}").format(e.errno,
+                                                                 self.input_file,
+                                                                 e.strerror)
+
+        try:
+            self.output_fh = open (self.output_file, 'w')
+        except IOError as e:
+            fail = 1
+            print ("Error ({0}). Couln't Open {1}...{2}").format(e.errno,
+                                                                 self.output_file,
+                                                                 e.strerror)
+
     # Preliminary Line Formatting
     def init_src (self):
         self.src = map(lambda x: x.rstrip(), self.input_fh)
@@ -65,7 +91,7 @@ class Program (object):
 
     def init_instructions (self):
         self.instructions = [Instr(line) for line in self.src]
-        self.instructions = filter (lambda i: i.valid_instr(), self.instructions)
+        self.instructions = filter (lambda i: i.valid, self.instructions)
         
     # Get program source
     def get_src (self):
@@ -75,6 +101,14 @@ class Program (object):
     def get_instructions (self):
         return self.instructions
 
+    # Get Program byte_size
+    def get_byte_size (self):
+
+        byte_cnt = 0
+        for i in self.instructions:
+            byte_cnt += i.byte_size
+
+        return byte_cnt
 
     # Rich Comparison based on program size (in bytes) [... .etc]
     def __lt__ (self, prog2):
@@ -100,7 +134,11 @@ class Program (object):
 
 def main ():
 
-    prog = Program ("inpu", "output")
+    prog = Program ("input", "output")
 
     if prog:
-        print (prog)
+        for i in prog.instructions:
+            print ("Valid: {0}; Byte Size: {1}").format(i.args, i.byte_size)
+
+        print ("Program Size: " + str(prog.byte_size))
+        
