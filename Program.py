@@ -15,7 +15,12 @@ class Program (object):
     def __new__(cls, *args, **kwargs):
 
         fail = 0
-
+        
+        # I assume there's a better way of accomplishing this check without the
+        # redundant open/close of files... It's on the todo list.
+        # Note: Originally used os.path.isfile(filename) but that doesn't check read 
+        # permissions for existing files and won't be useful for checking user's ability to 
+        # create new files.
         try:
             # Open Filehandlers for Error-checking
             # (i.e. don't create object unless correct file permissions)
@@ -29,6 +34,7 @@ class Program (object):
 
         if not fail:
             # Close Error-check Filehandlers
+            # Tried to pass the open handlers to __init__, but wasn't able to modify *args[]...
             i_fh.close()
             o_fh.close()
 
@@ -60,7 +66,11 @@ class Program (object):
         self.num_src_lines = None
         self.num_instructions = None
         self.byte_size = self.get_byte_size()
-
+        
+        ####
+        # Close Input Filehandler after initializing the instance of Program
+        ####
+        
     # Instance Representative String
     def __str__ (self):
         return "Assemble: Program"
@@ -111,6 +121,8 @@ class Program (object):
         return byte_cnt
 
     # Rich Comparison based on program size (in bytes) [... .etc]
+    # Note: There are better methods of accomplishing this.  These are placeholder
+    # functions for now; consider it an exercise in exception handling
     def __lt__ (self, prog2):
 
         try:
@@ -132,6 +144,8 @@ class Program (object):
         except (AttributeError, TypeError):
             return False
 
+
+# Temporary Test Function
 def main ():
 
     prog = Program ("input", "output")
