@@ -8,6 +8,8 @@ and/or hex output files for easy input into the Altera Cyclone II.
 #!/usr/bin/python3 -i
 
 from Instruction import Instr
+import Translate
+
 
 class Program (object):
 
@@ -150,9 +152,6 @@ def main ():
 
     prog = Program ("input", "output")
 
-    if prog:
-        for i in prog.instructions:
-            print ("Valid: {0}; Byte Size: {1}").format(i.args, i.byte_size)
-
-        print ("Program Size: " + str(prog.byte_size))
-        
+    t = Translate.Translate()
+    print (t.reg_decode(prog.instructions[1].cmd))
+    
